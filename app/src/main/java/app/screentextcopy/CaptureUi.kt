@@ -326,9 +326,8 @@ class CaptureUi(private val ctx: Context, private val host: CaptureHost) {
         shortcutButton.tooltipText = null // long-press opens the shortcut list instead
     }
 
-    private fun runShortcut(s: Shortcut) {
-        val text = selectionView.selectedText()
-        if (text.isBlank()) return
+    private fun runShortcut(s: Shortcut) = withSelectedText { text ->
+        if (text.isBlank()) return@withSelectedText
         ShortcutRunner.run(ctx, host, s, text, done = { host.close() }, other = { pickShortcut() })
     }
 
@@ -421,20 +420,95 @@ class CaptureUi(private val ctx: Context, private val host: CaptureHost) {
         statusSpinner.visibility = if (busy) View.VISIBLE else View.GONE
     }
 
+    // ---------- Careful re-read of the selection ----------
+
+    private var resolving = false
+
+    /**
+     * Gives the selected text to [action]. Lines that came from image recognition are first
+     * re-read closely (wider crop, enlarged, both contrasts), which recovers cut-off letters
+     * and fixes misread ones. Text read directly from apps is already exact and kept as is.
+     */
+    private fun withSelectedText(action: (String) -> Unit) {
+        if (resolving) return
+        val selected = selectionView.selectedWords()
+        if (selected.isEmpty()) return
+        val bmp = screenshot
+        if (bmp == null || selected.none { it.fromImage }) {
+            action(Word.join(selected))
+            return
+        }
+        // Group the selection into its lines, keeping reading order.
+        val lines = LinkedHashMap<Int, MutableList<Word>>()
+        for (w in selected) lines.getOrPut(w.line) { ArrayList() }.add(w)
+        val all = selectionView.allWords()
+
+        resolving = true
+        setStatus("Reading the selection closely…", busy = true)
+        val gen = generation
+        worker.execute {
+            val parts = lines.values.map { ws ->
+                val original = ws.joinToString(" ") { it.text }
+                if (ws.none { it.fromImage }) return@map ws.first().para to original
+                val region = lineRegion(ws, all)
+                val reread = runCatching { OcrEngine.rereadLine(ctx, bmp, region) }.getOrNull()
+                // Keep the careful reading unless it is clearly worse than the first one.
+                val better = reread != null && reread.second >= 35 &&
+                    reread.first.length >= (original.length * 0.6f)
+                ws.first().para to (if (better) reread!!.first else original)
+            }
+            main.post {
+                resolving = false
+                if (destroyed || gen != generation) return@post
+                setStatus(if (ocrRunning) "${readyStatus()}  ·  reading images…" else readyStatus(), busy = ocrRunning)
+                val sb = StringBuilder()
+                var lastPara = Int.MIN_VALUE
+                for ((para, text) in parts) {
+                    if (sb.isNotEmpty()) sb.append(if (para == lastPara) " " else "\n")
+                    sb.append(text)
+                    lastPara = para
+                }
+                action(sb.toString())
+            }
+        }
+    }
+
+    /**
+     * The area to re-read for one selected line: the words' box widened by about half a letter
+     * height on each side (to catch cut-off first or last letters), but never into the next
+     * unselected word on the same line.
+     */
+    private fun lineRegion(ws: List<Word>, all: List<Word>): Rect {
+        val box = RectF(ws.first().box)
+        ws.forEach { box.union(it.box) }
+        val h = box.height()
+        var padLeft = 0.6f * h
+        var padRight = 0.6f * h
+        val lineId = ws.first().line
+        for (o in all) {
+            if (o.line != lineId || o in ws) continue
+            if (o.box.right <= box.left) padLeft = minOf(padLeft, (box.left - o.box.right) * 0.7f)
+            if (o.box.left >= box.right) padRight = minOf(padRight, (o.box.left - box.right) * 0.7f)
+        }
+        val padV = 0.25f * h
+        return Rect(
+            (box.left - padLeft).toInt(), (box.top - padV).toInt(),
+            (box.right + padRight).toInt(), (box.bottom + padV).toInt()
+        )
+    }
+
     // ---------- Actions ----------
 
-    private fun copy() {
-        val text = selectionView.selectedText()
-        if (text.isBlank()) return
+    private fun copy() = withSelectedText { text ->
+        if (text.isBlank()) return@withSelectedText
         val clipboard = ctx.getSystemService(ClipboardManager::class.java)
         clipboard.setPrimaryClip(ClipData.newPlainText("Screen text", text))
         Toast.makeText(ctx, "Copied", Toast.LENGTH_SHORT).show()
         host.close()
     }
 
-    private fun share() {
-        val text = selectionView.selectedText()
-        if (text.isBlank()) return
+    private fun share() = withSelectedText { text ->
+        if (text.isBlank()) return@withSelectedText
         val send = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
             putExtra(Intent.EXTRA_TEXT, text)

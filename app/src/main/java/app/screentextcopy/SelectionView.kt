@@ -336,6 +336,10 @@ class SelectionView(context: Context) : View(context) {
 
     fun allWords(): List<Word> = words
 
+    /** The selected words in reading order (empty when nothing is selected). */
+    fun selectedWords(): List<Word> =
+        if (hasSelection()) words.subList(selStart, selEnd + 1).toList() else emptyList()
+
     /** Adds words found later (for example by a re-scan), keeping the current selection. */
     fun addWords(list: List<Word>) {
         if (list.isNotEmpty()) setWords(words + list)

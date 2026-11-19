@@ -5,7 +5,7 @@ Long-press a thin strip at the bottom edge of the screen, then tap or circle any
 (in a chat, web page, app or image) and copy it.
 
 - Text shown by apps (chats, web pages, documents) is read directly, so it is exact in Arabic and English.
-- Text inside images is recognized on the phone with Tesseract (high-accuracy Arabic, fast English).
+- Text inside images is recognized on the phone with Tesseract (high-accuracy Arabic and English); selected image text is re-read closely before copying.
 - No internet permission and no Google services.
 - Updates: GitHub Releases, installed through Obtainium.
 
