@@ -331,21 +331,52 @@ class SelectionView(context: Context) : View(context) {
         lassoPoints.add(PointF(x, y))
     }
 
+    /** Called with the tap point (screenshot pixels) when a tap finds no word, to re-scan that spot. */
+    var onTapMiss: ((PointF) -> Unit)? = null
+
+    fun allWords(): List<Word> = words
+
+    /** Adds words found later (for example by a re-scan), keeping the current selection. */
+    fun addWords(list: List<Word>) {
+        if (list.isNotEmpty()) setWords(words + list)
+    }
+
+    /** Index of the word under [p] (screenshot pixels); the smallest one wins if several overlap. */
+    private fun hitIndex(p: PointF): Int {
+        val pad = 12 * density / scaleX()
+        var best = -1
+        var bestArea = Float.MAX_VALUE
+        for ((i, w) in words.withIndex()) {
+            if (p.x >= w.box.left - pad && p.x <= w.box.right + pad &&
+                p.y >= w.box.top - pad && p.y <= w.box.bottom + pad
+            ) {
+                val area = w.box.width() * w.box.height()
+                if (area < bestArea) {
+                    bestArea = area
+                    best = i
+                }
+            }
+        }
+        return best
+    }
+
+    /** Selects the word at [p] (screenshot pixels). Returns false if there is none. */
+    fun selectWordAt(p: PointF): Boolean {
+        val hit = hitIndex(p)
+        if (hit < 0) return false
+        selStart = hit
+        selEnd = hit
+        performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+        invalidate()
+        onSelectionChanged?.invoke(true)
+        return true
+    }
+
     private fun tapAt(x: Float, y: Float) {
         val p = toBitmap(x, y)
-        val pad = 8 * density / scaleX()
-        val hit = words.indexOfFirst {
-            p.x >= it.box.left - pad && p.x <= it.box.right + pad &&
-                p.y >= it.box.top - pad && p.y <= it.box.bottom + pad
-        }
-        if (hit >= 0) {
-            selStart = hit
-            selEnd = hit
-            performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-            onSelectionChanged?.invoke(true)
-        } else if (hasSelection()) {
-            clearSelection()
-        }
+        if (selectWordAt(p)) return
+        if (hasSelection()) clearSelection()
+        onTapMiss?.invoke(p)
     }
 
     private fun dragHandle(x: Float, y: Float) {

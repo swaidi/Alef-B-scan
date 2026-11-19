@@ -2,7 +2,6 @@ package app.screentextcopy
 
 import android.accessibilityservice.AccessibilityService
 import android.annotation.SuppressLint
-import android.app.ActivityOptions
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Bitmap
@@ -16,8 +15,10 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
 import android.view.WindowManager
+import android.view.ContextThemeWrapper
 import android.view.accessibility.AccessibilityEvent
 import android.widget.Toast
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlin.math.abs
 
 /**
@@ -63,6 +64,7 @@ class TriggerService : AccessibilityService(), SharedPreferences.OnSharedPrefere
 
     private fun cleanup() {
         Prefs.get(this).unregisterOnSharedPreferenceChangeListener(this)
+        closeCapture()
         removeStrip()
         instance = null
     }
@@ -205,15 +207,72 @@ class TriggerService : AccessibilityService(), SharedPreferences.OnSharedPrefere
         )
     }
 
+    // ---------- Capture layer ----------
+
+    private var capture: CaptureUi? = null
+
+    /**
+     * Shows the frozen screen as a layer drawn over the current app (not a separate screen),
+     * so closing it after Copy leaves the user exactly where they were.
+     */
     private fun openCapture(bitmap: Bitmap) {
-        CaptureHolder.bitmap = bitmap
-        val intent = Intent(this, CaptureActivity::class.java)
-            .addFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                    Intent.FLAG_ACTIVITY_NO_ANIMATION
-            )
-        // No slide-in: the frozen screen appears exactly in place.
-        val options = ActivityOptions.makeCustomAnimation(this, 0, 0)
-        startActivity(intent, options.toBundle())
+        val wm = windowManager ?: return
+        closeCapture()
+        val words = CaptureHolder.directWords
+        CaptureHolder.directWords = emptyList()
+
+        val themed = ContextThemeWrapper(this, R.style.Theme_ScreenTextCopy_Capture)
+        val host = object : CaptureHost {
+            override fun close() = closeCapture()
+
+            override fun show(builder: MaterialAlertDialogBuilder) {
+                val dialog = builder.create()
+                dialog.window?.setType(WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY)
+                dialog.show()
+            }
+
+            override val alive: Boolean
+                get() = capture != null
+        }
+        val ui = CaptureUi(themed, host)
+
+        val bounds = wm.currentWindowMetrics.bounds
+        val params = WindowManager.LayoutParams(
+            bounds.width(),
+            bounds.height(),
+            WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+            PixelFormat.OPAQUE
+        ).apply {
+            gravity = Gravity.TOP or Gravity.START
+            x = 0
+            y = 0
+            layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+            setFitInsetsTypes(0)
+            title = "AlefBScanCapture"
+        }
+        try {
+            wm.addView(ui.root, params)
+        } catch (e: Exception) {
+            ui.destroy()
+            Toast.makeText(this, "Could not open the capture screen: ${e.message}", Toast.LENGTH_LONG).show()
+            return
+        }
+        capture = ui
+        strip?.visibility = View.INVISIBLE
+        ui.load(bitmap, words)
+    }
+
+    private fun closeCapture() {
+        val ui = capture ?: return
+        capture = null
+        ui.destroy()
+        try {
+            windowManager?.removeView(ui.root)
+        } catch (_: Exception) {
+        }
+        strip?.visibility = View.VISIBLE
     }
 }

@@ -67,7 +67,7 @@ object DirectText {
             val clean = text.trim()
             if (clean.length <= 600) {
                 val id = LineIds.newId()
-                out.add(Word(clean, RectF(nodeBounds), id, id, fromImage = false))
+                out.add(Word(clean, RectF(nodeBounds), id, id, fromImage = false, coarse = true))
             }
             return
         }

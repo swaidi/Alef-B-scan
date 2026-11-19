@@ -13,7 +13,9 @@ class Word(
     val box: RectF,
     val line: Int,
     val para: Int,
-    val fromImage: Boolean
+    val fromImage: Boolean,
+    /** True for a whole text block whose app did not report letter positions (replaced by real words after recognition). */
+    val coarse: Boolean = false
 ) {
     val rtl: Boolean = isRtl(text)
 

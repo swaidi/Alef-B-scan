@@ -119,9 +119,9 @@ object ShortcutRunner {
      * Runs [s] on [text]. [done] is called when the capture screen can close;
      * [other] opens the list of shortcuts (used when the smart action finds nothing).
      */
-    fun run(a: Activity, s: Shortcut, text: String, done: () -> Unit, other: () -> Unit) {
+    fun run(a: Context, host: CaptureHost, s: Shortcut, text: String, done: () -> Unit, other: () -> Unit) {
         when (s.type) {
-            Shortcut.TYPE_SMART -> smart(a, text, done, other)
+            Shortcut.TYPE_SMART -> smart(a, host, text, done, other)
             Shortcut.TYPE_PROCESS -> launch(
                 a,
                 Intent(Intent.ACTION_PROCESS_TEXT).setType("text/plain").setClassName(s.pkg, s.cls)
@@ -146,7 +146,7 @@ object ShortcutRunner {
 
     // ---------- Helpers ----------
 
-    private fun launch(a: Activity, intent: Intent, done: () -> Unit) {
+    private fun launch(a: Context, intent: Intent, done: () -> Unit) {
         try {
             a.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
             done()
@@ -157,7 +157,7 @@ object ShortcutRunner {
         }
     }
 
-    private fun copyResult(a: Activity, result: String, done: () -> Unit) {
+    private fun copyResult(a: Context, result: String, done: () -> Unit) {
         if (result.isBlank()) {
             Toast.makeText(a, "Nothing to copy for this shortcut", Toast.LENGTH_SHORT).show()
             return
@@ -204,7 +204,7 @@ object ShortcutRunner {
 
     private class Found(val label: String, val intent: Intent)
 
-    private fun smart(a: Activity, text: String, done: () -> Unit, other: () -> Unit) {
+    private fun smart(a: Context, host: CaptureHost, text: String, done: () -> Unit, other: () -> Unit) {
         worker.execute {
             val found = try {
                 detect(a.applicationContext, text)
@@ -212,20 +212,22 @@ object ShortcutRunner {
                 emptyList()
             }
             main.post {
-                if (a.isFinishing || a.isDestroyed) return@post
+                if (!host.alive) return@post
                 when {
-                    found.isEmpty() -> MaterialAlertDialogBuilder(a)
-                        .setTitle("Smart action")
-                        .setMessage("No phone number, email, link or address was found in the selection.")
-                        .setPositiveButton("Other shortcuts") { _, _ -> other() }
-                        .setNegativeButton("Cancel", null)
-                        .show()
+                    found.isEmpty() -> host.show(
+                        MaterialAlertDialogBuilder(a)
+                            .setTitle("Smart action")
+                            .setMessage("No phone number, email, link or address was found in the selection.")
+                            .setPositiveButton("Other shortcuts") { _, _ -> other() }
+                            .setNegativeButton("Cancel", null)
+                    )
                     found.size == 1 -> launch(a, found[0].intent, done)
-                    else -> MaterialAlertDialogBuilder(a)
-                        .setTitle("Smart action")
-                        .setItems(found.map { it.label }.toTypedArray()) { _, i -> launch(a, found[i].intent, done) }
-                        .setNegativeButton("Cancel", null)
-                        .show()
+                    else -> host.show(
+                        MaterialAlertDialogBuilder(a)
+                            .setTitle("Smart action")
+                            .setItems(found.map { it.label }.toTypedArray()) { _, i -> launch(a, found[i].intent, done) }
+                            .setNegativeButton("Cancel", null)
+                    )
                 }
             }
         }

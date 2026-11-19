@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.RectF
 import com.googlecode.tesseract.android.TessBaseAPI
 import java.io.File
@@ -82,44 +83,82 @@ object OcrEngine {
             }
         }
 
-        val words = ArrayList<Word>()
+        val words: List<Word>
         synchronized(this) {
             val tess = engine(context)
             tess.setPageSegMode(TessBaseAPI.PageSegMode.PSM_AUTO)
             tess.setImage(prepared)
             tess.getUTF8Text() // runs recognition
-
-            val it = tess.resultIterator
-            if (it != null) {
-                try {
-                    it.begin()
-                    var para = LineIds.newId()
-                    var line = LineIds.newId()
-                    var first = true
-                    do {
-                        if (!first && it.isAtBeginningOf(TessBaseAPI.PageIteratorLevel.RIL_PARA)) {
-                            para = LineIds.newId()
-                            line = LineIds.newId()
-                        } else if (!first && it.isAtBeginningOf(TessBaseAPI.PageIteratorLevel.RIL_TEXTLINE)) {
-                            line = LineIds.newId()
-                        }
-                        first = false
-                        val text = it.getUTF8Text(TessBaseAPI.PageIteratorLevel.RIL_WORD)?.trim()
-                        val conf = it.confidence(TessBaseAPI.PageIteratorLevel.RIL_WORD)
-                        val rect = it.getBoundingRect(TessBaseAPI.PageIteratorLevel.RIL_WORD)
-                        // Arabic words get lower confidence scores even when correct, so they use a lower bar.
-                        val minConf = if (text != null && Word.isRtl(text)) MIN_CONFIDENCE_RTL else MIN_CONFIDENCE
-                        if (!text.isNullOrEmpty() && conf >= minConf && rect != null && !rect.isEmpty) {
-                            words.add(Word(text, RectF(rect), line, para, fromImage = true))
-                        }
-                    } while (it.next(TessBaseAPI.PageIteratorLevel.RIL_WORD))
-                } finally {
-                    it.delete()
-                }
-            }
+            words = collectWords(tess, 1f, 0f, 0f, MIN_CONFIDENCE, MIN_CONFIDENCE_RTL)
             tess.clear()
         }
         prepared.recycle()
+        return words
+    }
+
+    /**
+     * Focused second look at one strip of the screen (used when a tap finds no word).
+     * The strip is enlarged and scanned for scattered words with a low confidence bar,
+     * so small or faint text that the full pass skipped can still be selected.
+     */
+    fun recognizeRegion(context: Context, screenshot: Bitmap, region: Rect): List<Word> {
+        val r = Rect(region)
+        if (!r.intersect(0, 0, screenshot.width, screenshot.height) || r.width() < 4 || r.height() < 4) {
+            return emptyList()
+        }
+        val scale = if (r.height() < 120) 3f else 2f
+        val crop = Bitmap.createBitmap(screenshot, r.left, r.top, r.width(), r.height())
+        val big = Bitmap.createScaledBitmap(crop, (r.width() * scale).toInt(), (r.height() * scale).toInt(), true)
+        if (crop !== screenshot && crop !== big) crop.recycle()
+
+        val words: List<Word>
+        synchronized(this) {
+            val tess = engine(context)
+            tess.setPageSegMode(TessBaseAPI.PageSegMode.PSM_SPARSE_TEXT)
+            tess.setImage(big)
+            tess.getUTF8Text()
+            words = collectWords(tess, scale, r.left.toFloat(), r.top.toFloat(), 10f, 5f)
+            tess.clear()
+        }
+        big.recycle()
+        return words
+    }
+
+    /** Reads word boxes from the last recognition, mapping them back to screenshot pixels. */
+    private fun collectWords(
+        tess: TessBaseAPI, scale: Float, offsetX: Float, offsetY: Float, minLatin: Float, minRtl: Float
+    ): List<Word> {
+        val words = ArrayList<Word>()
+        val it = tess.resultIterator ?: return words
+        try {
+            it.begin()
+            var para = LineIds.newId()
+            var line = LineIds.newId()
+            var first = true
+            do {
+                if (!first && it.isAtBeginningOf(TessBaseAPI.PageIteratorLevel.RIL_PARA)) {
+                    para = LineIds.newId()
+                    line = LineIds.newId()
+                } else if (!first && it.isAtBeginningOf(TessBaseAPI.PageIteratorLevel.RIL_TEXTLINE)) {
+                    line = LineIds.newId()
+                }
+                first = false
+                val text = it.getUTF8Text(TessBaseAPI.PageIteratorLevel.RIL_WORD)?.trim()
+                val conf = it.confidence(TessBaseAPI.PageIteratorLevel.RIL_WORD)
+                val rect = it.getBoundingRect(TessBaseAPI.PageIteratorLevel.RIL_WORD)
+                // Arabic words get lower confidence scores even when correct, so they use a lower bar.
+                val minConf = if (text != null && Word.isRtl(text)) minRtl else minLatin
+                if (!text.isNullOrEmpty() && conf >= minConf && rect != null && !rect.isEmpty) {
+                    val box = RectF(
+                        rect.left / scale + offsetX, rect.top / scale + offsetY,
+                        rect.right / scale + offsetX, rect.bottom / scale + offsetY
+                    )
+                    words.add(Word(text, box, line, para, fromImage = true))
+                }
+            } while (it.next(TessBaseAPI.PageIteratorLevel.RIL_WORD))
+        } finally {
+            it.delete()
+        }
         return words
     }
 }
