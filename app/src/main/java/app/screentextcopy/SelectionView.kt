@@ -16,6 +16,7 @@ import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
+import android.widget.Magnifier
 import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
@@ -290,7 +291,10 @@ class SelectionView(context: Context) : View(context) {
                 }
             }
             MotionEvent.ACTION_MOVE -> when (mode) {
-                Mode.DRAG_START, Mode.DRAG_END -> dragHandle(x, y)
+                Mode.DRAG_START, Mode.DRAG_END -> {
+                    dragHandle(x, y)
+                    showMagnifier(x, y)
+                }
                 Mode.PENDING -> if (hypot(x - downX, y - downY) > slop) {
                     mode = Mode.LASSO
                     onSelectionChanged?.invoke(false)
@@ -315,10 +319,12 @@ class SelectionView(context: Context) : View(context) {
                     Mode.DRAG_START, Mode.DRAG_END -> onSelectionChanged?.invoke(true)
                     Mode.NONE -> {}
                 }
+                hideMagnifier()
                 mode = Mode.NONE
             }
             MotionEvent.ACTION_CANCEL -> {
                 lasso.reset()
+                hideMagnifier()
                 mode = Mode.NONE
             }
         }
@@ -381,6 +387,35 @@ class SelectionView(context: Context) : View(context) {
         if (selectWordAt(p)) return
         if (hasSelection()) clearSelection()
         onTapMiss?.invoke(p)
+    }
+
+    // ---------- Magnifier while dragging a handle (for small text) ----------
+
+    private val magnifier: Magnifier? by lazy {
+        try {
+            Magnifier.Builder(this)
+                .setInitialZoom(1.8f)
+                .setSize((150 * density).toInt(), (56 * density).toInt())
+                .setCornerRadius(16 * density)
+                .build()
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    /** Shows the text just above the finger, enlarged, at the point the handle is choosing. */
+    private fun showMagnifier(x: Float, y: Float) {
+        try {
+            magnifier?.show(x, y - 28 * density)
+        } catch (_: Exception) {
+        }
+    }
+
+    private fun hideMagnifier() {
+        try {
+            magnifier?.dismiss()
+        } catch (_: Exception) {
+        }
     }
 
     private fun dragHandle(x: Float, y: Float) {

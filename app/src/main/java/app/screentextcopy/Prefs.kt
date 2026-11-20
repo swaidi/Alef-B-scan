@@ -33,6 +33,40 @@ object Prefs {
 
     fun ocrLanguages(c: Context) = if (arabic(c)) "ara+eng" else "eng"
 
+    // ---------- Trigger ----------
+    const val KEY_TRIGGER_MODE = "trigger_mode"
+    const val TRIGGER_LONG = "long"
+    const val TRIGGER_DOUBLE = "double"
+    const val TRIGGER_BOTH = "both"
+    fun triggerMode(c: Context): String = get(c).getString(KEY_TRIGGER_MODE, TRIGGER_LONG) ?: TRIGGER_LONG
+
+    // ---------- Copy ----------
+    const val KEY_STAY_AFTER_COPY = "stay_after_copy"
+    const val KEY_HISTORY_ON = "history_on"
+    const val KEY_HISTORY_HOURS = "history_hours"
+    fun stayAfterCopy(c: Context) = get(c).getBoolean(KEY_STAY_AFTER_COPY, false)
+    fun historyOn(c: Context) = get(c).getBoolean(KEY_HISTORY_ON, true)
+    /** How long copied items are kept; 0 = until cleared. */
+    fun historyHours(c: Context) = get(c).getInt(KEY_HISTORY_HOURS, 24)
+
+    // ---------- Test report ----------
+    const val KEY_LOG_TEXT = "log_text"
+    fun logText(c: Context) = get(c).getBoolean(KEY_LOG_TEXT, false)
+
+    // ---------- Updates ----------
+    const val KEY_UPDATE_TAG = "update_tag"
+    const val KEY_LAST_UPDATE_CHECK = "last_update_check"
+    fun updateTag(c: Context): String? = get(c).getString(KEY_UPDATE_TAG, null)
+    fun setUpdateTag(c: Context, tag: String?) = get(c).edit().putString(KEY_UPDATE_TAG, tag).apply()
+    fun lastUpdateCheck(c: Context) = get(c).getLong(KEY_LAST_UPDATE_CHECK, 0L)
+    fun setLastUpdateCheck(c: Context, t: Long) = get(c).edit().putLong(KEY_LAST_UPDATE_CHECK, t).apply()
+
+    /** Settings that only matter to the trigger strip; other changes do not redraw it. */
+    val STRIP_KEYS = setOf(
+        KEY_STRIP_ENABLED, KEY_STRIP_VISIBLE, KEY_STRIP_HEIGHT_DP, KEY_STRIP_OFFSET_DP,
+        KEY_STRIP_WIDTH_PCT, KEY_TRIGGER_MODE
+    )
+
     /** Shows or hides a Quick Settings tile by enabling or disabling its component. */
     fun setComponentEnabled(c: Context, cls: Class<*>, enabled: Boolean) {
         val state = if (enabled) PackageManager.COMPONENT_ENABLED_STATE_ENABLED

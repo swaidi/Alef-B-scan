@@ -18,6 +18,7 @@ import android.view.WindowManager
 import android.view.ContextThemeWrapper
 import android.view.accessibility.AccessibilityEvent
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlin.math.abs
 
@@ -70,7 +71,7 @@ class TriggerService : AccessibilityService(), SharedPreferences.OnSharedPrefere
     }
 
     override fun onSharedPreferenceChanged(prefs: SharedPreferences?, key: String?) {
-        handler.post { refreshStrip() }
+        if (key == null || key in Prefs.STRIP_KEYS) handler.post { refreshStrip() }
     }
 
     // ---------- Trigger strip ----------
@@ -109,12 +110,20 @@ class TriggerService : AccessibilityService(), SharedPreferences.OnSharedPrefere
             title = "ScreenTextCopyStrip"
         }
 
+        // Trigger gesture: long-press, double-tap, or either (set in the app).
+        val mode = Prefs.triggerMode(this)
+        val useLong = mode != Prefs.TRIGGER_DOUBLE
+        val useDouble = mode != Prefs.TRIGGER_LONG
         val longPressMs = ViewConfiguration.getLongPressTimeout().toLong()
+        val doubleTapMs = ViewConfiguration.getDoubleTapTimeout().toLong()
         val slop = ViewConfiguration.get(this).scaledTouchSlop
         var downX = 0f
         var downY = 0f
+        var downAt = 0L
+        var lastTapUpAt = 0L
         val longPress = Runnable {
             view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+            AppLog.i("trigger: long-press")
             captureNow()
         }
 
@@ -123,16 +132,30 @@ class TriggerService : AccessibilityService(), SharedPreferences.OnSharedPrefere
                 MotionEvent.ACTION_DOWN -> {
                     downX = event.rawX
                     downY = event.rawY
-                    handler.postDelayed(longPress, longPressMs)
+                    downAt = event.eventTime
+                    if (useLong) handler.postDelayed(longPress, longPressMs)
                 }
                 MotionEvent.ACTION_MOVE -> {
                     if (abs(event.rawX - downX) > slop || abs(event.rawY - downY) > slop) {
                         handler.removeCallbacks(longPress)
+                        downAt = 0L // a swipe is not a tap
                     }
                 }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                MotionEvent.ACTION_UP -> {
                     handler.removeCallbacks(longPress)
+                    val isTap = downAt != 0L && event.eventTime - downAt < longPressMs
+                    if (useDouble && isTap) {
+                        if (event.eventTime - lastTapUpAt <= doubleTapMs + 120) {
+                            lastTapUpAt = 0L
+                            view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                            AppLog.i("trigger: double-tap")
+                            captureNow()
+                        } else {
+                            lastTapUpAt = event.eventTime
+                        }
+                    }
                 }
+                MotionEvent.ACTION_CANCEL -> handler.removeCallbacks(longPress)
             }
             true
         }
@@ -141,7 +164,8 @@ class TriggerService : AccessibilityService(), SharedPreferences.OnSharedPrefere
             wm.addView(view, params)
             strip = view
         } catch (e: Exception) {
-            Toast.makeText(this, "Could not show the trigger strip: ${e.message}", Toast.LENGTH_LONG).show()
+            AppLog.e("trigger strip", e)
+            Toast.makeText(this, getString(R.string.msg_strip_failed, e.message ?: ""), Toast.LENGTH_LONG).show()
         }
     }
 
@@ -189,7 +213,8 @@ class TriggerService : AccessibilityService(), SharedPreferences.OnSharedPrefere
                     hw?.recycle()
                     buffer.close()
                     if (soft == null) {
-                        Toast.makeText(this@TriggerService, "Screenshot failed", Toast.LENGTH_SHORT).show()
+                        AppLog.w("screenshot: could not convert")
+                        Toast.makeText(this@TriggerService, R.string.msg_screenshot_failed, Toast.LENGTH_SHORT).show()
                         return
                     }
                     openCapture(soft)
@@ -199,7 +224,7 @@ class TriggerService : AccessibilityService(), SharedPreferences.OnSharedPrefere
                     strip?.visibility = View.VISIBLE
                     Toast.makeText(
                         this@TriggerService,
-                        "Screenshot not allowed here (code $errorCode)",
+                        getString(R.string.msg_screenshot_blocked, errorCode),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -225,10 +250,11 @@ class TriggerService : AccessibilityService(), SharedPreferences.OnSharedPrefere
         val host = object : CaptureHost {
             override fun close() = closeCapture()
 
-            override fun show(builder: MaterialAlertDialogBuilder) {
+            override fun show(builder: MaterialAlertDialogBuilder): AlertDialog {
                 val dialog = builder.create()
                 dialog.window?.setType(WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY)
                 dialog.show()
+                return dialog
             }
 
             override val alive: Boolean
@@ -257,7 +283,8 @@ class TriggerService : AccessibilityService(), SharedPreferences.OnSharedPrefere
             wm.addView(ui.root, params)
         } catch (e: Exception) {
             ui.destroy()
-            Toast.makeText(this, "Could not open the capture screen: ${e.message}", Toast.LENGTH_LONG).show()
+            AppLog.e("capture layer", e)
+            Toast.makeText(this, getString(R.string.msg_capture_failed, e.message ?: ""), Toast.LENGTH_LONG).show()
             return
         }
         capture = ui

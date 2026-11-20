@@ -55,7 +55,7 @@ class ToggleTileService : TileService() {
         val on = TriggerService.instance != null
         tile.state = if (on) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            tile.subtitle = if (on) "On" else "Off"
+            tile.subtitle = getString(if (on) R.string.on else R.string.off)
         }
         tile.updateTile()
     }

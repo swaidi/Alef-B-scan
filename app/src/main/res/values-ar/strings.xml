@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="service_label">مُشغّل Alef_B_scan</string>
+    <string name="service_description">يُظهر شريطًا رفيعًا غير مرئي أسفل الشاشة. اضغط عليه مطوّلًا أو انقر مرتين لتجميد الشاشة ونسخ النص منها. يُقرأ النص على هذا الهاتف فقط ولا يُرسَل إلى أي مكان.</string>
+    <string name="tile_toggle_label">مُشغّل نسخ النص</string>
+    <string name="tile_capture_label">نسخ نص الشاشة</string>
+    <string name="projection_channel">التقاط الشاشة</string>
+    <string name="projection_notification">جارٍ التقاط الشاشة لقراءة النص</string>
+
+    <!-- General -->
+    <string name="cancel">إلغاء</string>
+    <string name="close">إغلاق</string>
+    <string name="save">حفظ</string>
+    <string name="on">مفعّل</string>
+    <string name="off">متوقف</string>
+
+    <!-- Home -->
+    <string name="btn_update">تحديث</string>
+    <string name="status_on">المُشغّل مفعّل</string>
+    <string name="status_on_line">اضغط مطوّلًا أو انقر مرتين على الحافة السفلية لنسخ النص من الشاشة.</string>
+    <string name="status_off">المُشغّل متوقف</string>
+    <string name="status_off_line">فعّل «مُشغّل Alef_B_scan» من إعدادات تسهيل الاستخدام لاستخدام إيماءة الحافة السفلية.</string>
+    <string name="open_accessibility">فتح إعدادات تسهيل الاستخدام</string>
+    <string name="g_trigger">المُشغّل</string>
+    <string name="g_trigger_line">الإيماءة، وموضع الشريط وحجمه، وتجربة الالتقاط</string>
+    <string name="g_shortcuts">الاختصارات</string>
+    <string name="g_shortcuts_line">زر ⚡: تثبيت الاختصارات وتعديلها وإضافتها وحذفها</string>
+    <string name="g_copy">النسخ والسجل</string>
+    <string name="g_copy_line">سجل النسخ والبقاء على الشاشة لنسخ المزيد</string>
+    <string name="g_recognition">قراءة النص</string>
+    <string name="g_recognition_line">اللغات المقروءة من الصور</string>
+    <string name="g_tiles">بلاطات الإعدادات السريعة</string>
+    <string name="g_tiles_line">بلاطة التشغيل والإيقاف وبلاطة الالتقاط</string>
+    <string name="g_backup">النسخ الاحتياطي</string>
+    <string name="g_backup_line">تصدير إعداداتك واختصاراتك أو استيرادها</string>
+    <string name="g_updates">التحديثات</string>
+    <string name="g_updates_line">البحث عن إصدار جديد</string>
+    <string name="g_report">تقرير الاختبار</string>
+    <string name="g_report_line">ما قام به التطبيق وأي أخطاء، للمساعدة في الاختبار</string>
+    <string name="s_language">اللغة</string>
+    <string name="lang_system">لغة الهاتف</string>
+    <string name="lang_en">English</string>
+    <string name="lang_ar">العربية</string>
+    <string name="about">Alef_B_scan %1$s · من swaidi · يُقرأ النص على هذا الهاتف فقط</string>
+
+    <!-- Trigger page -->
+    <string name="restricted_hint">إذا كان المفتاح في إعدادات تسهيل الاستخدام رماديًا: الإعدادات ← التطبيقات ← Alef_B_scan ← قائمة ⋮ ← السماح بالإعدادات المقيّدة، ثم حاول مرة أخرى.</string>
+    <string name="s_gesture">الإيماءة</string>
+    <string name="strip_enabled">استخدام شريط الحافة السفلية</string>
+    <string name="trigger_long">ضغط مطوّل</string>
+    <string name="trigger_double">نقر مزدوج</string>
+    <string name="trigger_both">كلاهما</string>
+    <string name="s_strip">الشريط</string>
+    <string name="strip_visible">إظهار حدود الشريط (للضبط)</string>
+    <string name="strip_height">ارتفاع الشريط</string>
+    <string name="strip_offset">المسافة من الحافة السفلية</string>
+    <string name="strip_width">عرض الشريط</string>
+    <string name="strip_hint">اجعل الشريط فوق مقبض التنقل مباشرة حتى تبقى إيماءات الهاتف الأصلية تعمل.</string>
+    <string name="test_capture">تجربة الالتقاط</string>
+
+    <!-- Shortcuts -->
+    <string name="shortcuts_intro">انقر ⚡ في شريط التحديد لتشغيل الاختصار المثبّت (★). اضغط مطوّلًا على ⚡ لعرض كل الاختصارات، ثم اضغط مطوّلًا على أحدها لتثبيته أو تعديله أو حذفه.</string>
+    <string name="no_shortcuts">لا توجد اختصارات بعد.</string>
+    <string name="add_title">إضافة اختصار</string>
+    <string name="add_smart">إجراء ذكي (هاتف، بريد، رابط، عنوان، تاريخ، آيبان، رمز)</string>
+    <string name="add_translate">ترجمة (عربي ↔ إنجليزي)</string>
+    <string name="add_process">إجراء نصي من تطبيق (ترجمة، مساعد ذكي، قاموس…)</string>
+    <string name="add_share">مشاركة مباشرة مع تطبيق</string>
+    <string name="add_google">بحث Google</string>
+    <string name="add_imdb">بحث IMDb</string>
+    <string name="add_custom_link">رابط مخصّص…</string>
+    <string name="add_numbers">نسخ الأرقام فقط</string>
+    <string name="add_contacts">نسخ البريد وأرقام الهواتف فقط</string>
+    <string name="add_join">دمج الأسطر في سطر واحد ونسخه</string>
+    <string name="add_template">نسخ بقالب…</string>
+    <string name="opt_pin">تثبيت في الشريط</string>
+    <string name="opt_edit">تعديل</string>
+    <string name="opt_move_up">نقل للأعلى</string>
+    <string name="opt_remove">حذف</string>
+    <string name="msg_pinned">تم التثبيت: %1$s</string>
+    <string name="msg_removed">تم الحذف: %1$s</string>
+    <string name="msg_added">تمت الإضافة: %1$s</string>
+    <string name="edit_title">تعديل الاختصار</string>
+    <string name="change_app">تغيير التطبيق</string>
+    <string name="name_label">الاسم</string>
+    <string name="custom_link">رابط مخصّص</string>
+    <string name="my_search">بحثي</string>
+    <string name="template_title">نسخ بقالب</string>
+    <string name="reference">مرجع</string>
+    <string name="placeholder_note">يُستبدل {text} بالنص المحدّد.</string>
+    <string name="choose_text_action">اختر إجراءً نصيًا</string>
+    <string name="share_to">مشاركة مع</string>
+    <string name="msg_no_apps">لا توجد تطبيقات على هذا الهاتف تقدّم ذلك</string>
+    <string name="run_shortcut_title">الاختصارات · اضغط مطوّلًا لتثبيت أو تعديل أو حذف</string>
+
+    <string name="sc_smart">إجراء ذكي</string>
+    <string name="sc_translate">ترجمة</string>
+    <string name="sc_numbers">الأرقام فقط</string>
+    <string name="sc_contacts">البريد والهواتف</string>
+    <string name="sc_join">دمج الأسطر</string>
+    <string name="sc_desc_smart">يجد أرقام الهواتف والبريد والروابط والعناوين والتواريخ وأرقام الآيبان والرموز</string>
+    <string name="sc_desc_translate">عربي ↔ إنجليزي بترجمة الهاتف المدمجة أو بتطبيق الترجمة لديك</string>
+    <string name="sc_desc_process">يرسل النص إلى الإجراء النصي لهذا التطبيق</string>
+    <string name="sc_desc_share">يشارك النص مباشرة مع هذا التطبيق</string>
+    <string name="sc_desc_link">يفتح %1$s</string>
+    <string name="sc_desc_numbers">ينسخ الأرقام فقط</string>
+    <string name="sc_desc_contacts">ينسخ البريد وأرقام الهواتف فقط</string>
+    <string name="sc_desc_join">يدمج كل الأسطر في سطر واحد وينسخه</string>
+    <string name="sc_desc_template">ينسخ بالشكل: %1$s</string>
+
+    <string name="smart_none">لم يُعثر في التحديد على رقم هاتف أو بريد أو رابط أو عنوان أو تاريخ أو آيبان أو رمز.</string>
+    <string name="btn_other_shortcuts">اختصارات أخرى</string>
+    <string name="smart_call">اتصال  %1$s</string>
+    <string name="smart_whatsapp">واتساب  %1$s</string>
+    <string name="smart_email">بريد  %1$s</string>
+    <string name="smart_open">فتح  %1$s</string>
+    <string name="smart_map">خريطة  %1$s</string>
+    <string name="smart_date">%1$s  %2$s</string>
+    <string name="smart_iban">نسخ الآيبان  %1$s</string>
+    <string name="smart_code">نسخ الرمز  %1$s</string>
+
+    <string name="tr_title">الترجمة</string>
+    <string name="tr_working">جارٍ الترجمة…</string>
+    <string name="tr_copy">نسخ الترجمة</string>
+    <string name="tr_unavailable">لا تتوفر في هذا الهاتف ترجمة مدمجة. يمكنك استخدام تطبيق ترجمة أو تثبيت واحد.</string>
+    <string name="tr_use_app">استخدام تطبيق ترجمة</string>
+    <string name="tr_install">تثبيت تطبيق ترجمة</string>
+    <string name="tr_no_store">لم يُعثر على متجر تطبيقات لتثبيت تطبيق ترجمة.</string>
+
+    <string name="msg_unknown_shortcut">اختصار غير معروف</string>
+    <string name="msg_no_app">لا يوجد تطبيق لهذا الاختصار</string>
+    <string name="msg_not_allowed">هذا التطبيق لا يسمح بفتحه بهذه الطريقة</string>
+    <string name="msg_nothing_to_copy">لا يوجد ما يُنسخ بهذا الاختصار</string>
+    <string name="msg_add_shortcuts">أضف اختصارات من إعدادات Alef_B_scan</string>
+
+    <!-- Capture screen -->
+    <string name="cap_ready">انقر على كلمة، أو أحِط النص بدائرة</string>
+    <string name="cap_reading">جارٍ قراءة النص…</string>
+    <string name="cap_reading_images">انقر على كلمة، أو أحِط النص بدائرة · جارٍ قراءة الصور…</string>
+    <string name="cap_no_text">لم يُعثر على نص. انقر حيث يوجد نص للبحث مرة أخرى.</string>
+    <string name="cap_ocr_failed">تعذّرت قراءة نص الصورة: %1$s</string>
+    <string name="cap_looking">جارٍ البحث عن نص هنا…</string>
+    <string name="cap_no_text_spot">لم يُعثر على نص في هذا الموضع</string>
+    <string name="cap_reading_selection">جارٍ قراءة التحديد بدقة…</string>
+    <string name="act_copy">نسخ</string>
+    <string name="act_share">مشاركة</string>
+    <string name="act_sentence">الجملة</string>
+    <string name="act_paragraph">الفقرة</string>
+    <string name="act_all">الكل</string>
+    <string name="act_smart">ذكي</string>
+    <string name="share_text">مشاركة النص</string>
+    <string name="msg_copied">تم النسخ</string>
+    <string name="msg_copied_stay">تم النسخ. حدّد المزيد لنسخه.</string>
+    <string name="msg_share_unavailable">المشاركة غير متاحة</string>
+    <string name="msg_screenshot_failed">فشل التقاط الشاشة</string>
+    <string name="msg_screenshot_blocked">لا يمكن التقاط هذه الشاشة (الرمز %1$d)</string>
+    <string name="msg_capture_failed">تعذّر فتح شاشة الالتقاط: %1$s</string>
+    <string name="msg_strip_failed">تعذّر إظهار شريط المُشغّل: %1$s</string>
+
+    <!-- Copy & history page -->
+    <string name="stay_after_copy">البقاء لنسخ المزيد</string>
+    <string name="stay_after_copy_line">بعد النسخ، تبقى الشاشة المجمّدة مفتوحة لتحديد المزيد ونسخه. ويُحفظ كل نسخ أيضًا في السجل أدناه.</string>
+    <string name="s_history">سجل النسخ</string>
+    <string name="history_on">حفظ النص المنسوخ في السجل</string>
+    <string name="history_keep">الاحتفاظ بالعناصر لمدة:</string>
+    <string name="keep_1h">ساعة</string>
+    <string name="keep_24h">٢٤ ساعة</string>
+    <string name="keep_7d">٧ أيام</string>
+    <string name="keep_forever">حتى المسح</string>
+    <string name="history_privacy">يبقى السجل على هذا الهاتف فقط. وقد يتضمن رموزًا أو أرقام حسابات نسختها، لذا اجعل المدة قصيرة أو أوقفه.</string>
+    <string name="history_empty">لم يُنسخ شيء بعد.</string>
+    <string name="history_count">%1$d عنصر منسوخ</string>
+    <string name="history_tip">انقر على عنصر لنسخه مجددًا، واضغط عليه مطوّلًا لحذفه.</string>
+    <string name="history_delete_q">حذف هذا العنصر؟</string>
+    <string name="history_clear">مسح السجل</string>
+    <string name="history_clear_q">حذف كل العناصر المنسوخة من هذا الهاتف؟</string>
+
+    <!-- Recognition, tiles -->
+    <string name="ocr_arabic">قراءة العربية إلى جانب الإنجليزية في الصور</string>
+    <string name="recognition_line">يُقرأ النص الذي تعرضه التطبيقات بدقة تامة. أما النص داخل الصور فيُتعرّف عليه على هذا الهاتف، ويُعاد قراءة نص الصورة المحدّد بدقة قبل نسخه.</string>
+    <string name="tile_toggle_setting">بلاطة التشغيل والإيقاف: إيقاف المُشغّل بنقرة واحدة (مثلًا قبل تطبيقات البنوك)</string>
+    <string name="tile_capture_setting">بلاطة الالتقاط: تعمل حتى عند إيقاف المُشغّل</string>
+    <string name="tiles_hint">بعد تفعيل بلاطة، افتح الإعدادات السريعة، وانقر زر التعديل (القلم)، ثم اسحب البلاطة إلى مكانها.</string>
+
+    <!-- Backup -->
+    <string name="backup_line">احفظ إعداداتك واختصاراتك في ملف، مثلًا لضبط هاتفك الآخر بالطريقة نفسها. لا يشمل ذلك سجل النسخ.</string>
+    <string name="backup_export">تصدير الإعدادات</string>
+    <string name="backup_import">استيراد الإعدادات</string>
+    <string name="backup_exported">تم تصدير الإعدادات</string>
+    <string name="backup_imported">تم استيراد الإعدادات</string>
+    <string name="backup_failed">لم ينجح ذلك. هل هذا ملف إعدادات Alef_B_scan؟</string>
+
+    <!-- Updates -->
+    <string name="version_line">المثبّت: %1$s</string>
+    <string name="updates_line">انقر للبحث في GitHub عن إصدار أحدث.</string>
+    <string name="check_updates">البحث عن تحديثات</string>
+    <string name="updates_internet_note">يُستخدم الإنترنت فقط للبحث عن التحديثات وتنزيلها. لا يُرسَل نص الشاشة إلى أي مكان.</string>
+    <string name="checking_updates">جارٍ البحث عن تحديثات…</string>
+    <string name="up_to_date">لديك أحدث إصدار</string>
+    <string name="no_internet">تعذّر الوصول إلى GitHub. تحقّق من الاتصال بالإنترنت.</string>
+    <string name="update_available">إصدار جديد: %1$s</string>
+    <string name="update_install_q">تنزيله وتثبيته الآن؟ ستبقى إعداداتك واختصاراتك كما هي.</string>
+    <string name="update_install">تثبيت</string>
+    <string name="update_allow_installs">اسمح لـ Alef_B_scan بتثبيت التحديثات، ثم انقر «تحديث» مرة أخرى.</string>
+    <string name="downloading_update">جارٍ تنزيل التحديث…</string>
+    <string name="update_failed">فشل التنزيل. حاول لاحقًا.</string>
+
+    <!-- Test report -->
+    <string name="report_intro">يسجّل التقرير ما قام به التطبيق، والمدة التي استغرقتها كل خطوة، وأي أخطاء. شاركه بعد الاختبار للمساعدة في إصلاح المشكلات.</string>
+    <string name="report_include_text">تضمين النص في التقرير</string>
+    <string name="report_include_text_line">عند الإيقاف: يُسجَّل طول نص الشاشة فقط. عند التفعيل: يُسجَّل أيضًا الجزء الأول من النص المحدّد والمقروء. فعّله أثناء الاختبار فقط.</string>
+    <string name="report_view">عرض التقرير</string>
+    <string name="report_share">مشاركة التقرير</string>
+    <string name="report_clear">مسح التقرير</string>
+    <string name="report_clear_q">حذف التقرير من هذا الهاتف؟</string>
+    <string name="report_cleared">تم مسح التقرير</string>
+</resources>

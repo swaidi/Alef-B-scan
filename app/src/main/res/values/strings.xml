@@ -1,10 +1,218 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Alef_B_scan</string>
+    <string name="app_name" translatable="false">Alef_B_scan</string>
     <string name="service_label">Alef_B_scan trigger</string>
-    <string name="service_description">Shows a thin invisible strip at the bottom of the screen. Long-press it to capture the screen and copy text from it. Text recognition runs only on this device; nothing is uploaded.</string>
+    <string name="service_description">Shows a thin invisible strip at the bottom of the screen. Long-press or double-tap it to freeze the screen and copy text from it. Text is read only on this phone and is never sent anywhere.</string>
     <string name="tile_toggle_label">Text Copy trigger</string>
     <string name="tile_capture_label">Copy screen text</string>
     <string name="projection_channel">Screen capture</string>
     <string name="projection_notification">Capturing the screen for text recognition</string>
+
+    <!-- General -->
+    <string name="cancel">Cancel</string>
+    <string name="close">Close</string>
+    <string name="save">Save</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
+
+    <!-- Home -->
+    <string name="btn_update">Update</string>
+    <string name="status_on">Trigger is on</string>
+    <string name="status_on_line">Long-press or double-tap the bottom edge to copy text from the screen.</string>
+    <string name="status_off">Trigger is off</string>
+    <string name="status_off_line">Turn on “Alef_B_scan trigger” in Accessibility settings to use the bottom-edge gesture.</string>
+    <string name="open_accessibility">Open accessibility settings</string>
+    <string name="g_trigger">Trigger</string>
+    <string name="g_trigger_line">Gesture, strip position and size, test capture</string>
+    <string name="g_shortcuts">Shortcuts</string>
+    <string name="g_shortcuts_line">The ⚡ button: pin, edit, add or remove shortcuts</string>
+    <string name="g_copy">Copy &amp; history</string>
+    <string name="g_copy_line">Copy history and staying on the screen to copy more</string>
+    <string name="g_recognition">Text recognition</string>
+    <string name="g_recognition_line">Languages read from images</string>
+    <string name="g_tiles">Quick Settings tiles</string>
+    <string name="g_tiles_line">On/off tile and capture tile</string>
+    <string name="g_backup">Backup</string>
+    <string name="g_backup_line">Export or import your settings and shortcuts</string>
+    <string name="g_updates">Updates</string>
+    <string name="g_updates_line">Check for a new version</string>
+    <string name="g_report">Test report</string>
+    <string name="g_report_line">What the app did and any errors, to help with testing</string>
+    <string name="s_language">Language</string>
+    <string name="lang_system">Phone language</string>
+    <string name="lang_en">English</string>
+    <string name="lang_ar">العربية</string>
+    <string name="about">Alef_B_scan %1$s · by swaidi · text is read only on this phone</string>
+
+    <!-- Trigger page -->
+    <string name="restricted_hint">If the switch in Accessibility settings is greyed out: Settings → Apps → Alef_B_scan → ⋮ menu → Allow restricted settings, then try again.</string>
+    <string name="s_gesture">Gesture</string>
+    <string name="strip_enabled">Use the bottom-edge strip</string>
+    <string name="trigger_long">Long-press</string>
+    <string name="trigger_double">Double-tap</string>
+    <string name="trigger_both">Both</string>
+    <string name="s_strip">Strip</string>
+    <string name="strip_visible">Show strip outline (for adjusting)</string>
+    <string name="strip_height">Strip height</string>
+    <string name="strip_offset">Distance from bottom edge</string>
+    <string name="strip_width">Strip width</string>
+    <string name="strip_hint">Keep the strip just above the navigation handle so the phone\'s own gestures still work.</string>
+    <string name="test_capture">Test capture</string>
+
+    <!-- Shortcuts -->
+    <string name="shortcuts_intro">Tap ⚡ on the selection bar to run the pinned (★) shortcut. Hold ⚡ to see all shortcuts; hold one of them to pin, edit or remove it.</string>
+    <string name="no_shortcuts">No shortcuts yet.</string>
+    <string name="add_title">Add shortcut</string>
+    <string name="add_smart">Smart action (phone, email, link, address, date, IBAN, code)</string>
+    <string name="add_translate">Translate (Arabic ↔ English)</string>
+    <string name="add_process">App text action (Translate, AI assistant, dictionary…)</string>
+    <string name="add_share">Share directly to an app</string>
+    <string name="add_google">Search Google</string>
+    <string name="add_imdb">Search IMDb</string>
+    <string name="add_custom_link">Custom link…</string>
+    <string name="add_numbers">Copy numbers only</string>
+    <string name="add_contacts">Copy emails &amp; phone numbers only</string>
+    <string name="add_join">Join lines into one &amp; copy</string>
+    <string name="add_template">Copy with a template…</string>
+    <string name="opt_pin">Pin to the bar</string>
+    <string name="opt_edit">Edit</string>
+    <string name="opt_move_up">Move up</string>
+    <string name="opt_remove">Remove</string>
+    <string name="msg_pinned">Pinned: %1$s</string>
+    <string name="msg_removed">Removed: %1$s</string>
+    <string name="msg_added">Added: %1$s</string>
+    <string name="edit_title">Edit shortcut</string>
+    <string name="change_app">Change app</string>
+    <string name="name_label">Name</string>
+    <string name="custom_link">Custom link</string>
+    <string name="my_search">My search</string>
+    <string name="template_title">Copy with a template</string>
+    <string name="reference">Reference</string>
+    <string name="placeholder_note">{text} is replaced by the selected text.</string>
+    <string name="choose_text_action">Choose a text action</string>
+    <string name="share_to">Share to</string>
+    <string name="msg_no_apps">No apps on this phone offer this</string>
+    <string name="run_shortcut_title">Shortcuts · hold one to pin, edit or remove</string>
+
+    <string name="sc_smart">Smart action</string>
+    <string name="sc_translate">Translate</string>
+    <string name="sc_numbers">Numbers only</string>
+    <string name="sc_contacts">Emails &amp; phones</string>
+    <string name="sc_join">Join lines</string>
+    <string name="sc_desc_smart">Finds phone numbers, emails, links, addresses, dates, IBANs and codes</string>
+    <string name="sc_desc_translate">Arabic ↔ English with the phone\'s own translation, or your translator app</string>
+    <string name="sc_desc_process">Sends the text to this app\'s text action</string>
+    <string name="sc_desc_share">Shares the text directly to this app</string>
+    <string name="sc_desc_link">Opens %1$s</string>
+    <string name="sc_desc_numbers">Copies only the numbers</string>
+    <string name="sc_desc_contacts">Copies only emails and phone numbers</string>
+    <string name="sc_desc_join">Joins all lines into one and copies</string>
+    <string name="sc_desc_template">Copies as: %1$s</string>
+
+    <string name="smart_none">No phone number, email, link, address, date, IBAN or code was found in the selection.</string>
+    <string name="btn_other_shortcuts">Other shortcuts</string>
+    <string name="smart_call">Call  %1$s</string>
+    <string name="smart_whatsapp">WhatsApp  %1$s</string>
+    <string name="smart_email">Email  %1$s</string>
+    <string name="smart_open">Open  %1$s</string>
+    <string name="smart_map">Map  %1$s</string>
+    <string name="smart_date">%1$s  %2$s</string>
+    <string name="smart_iban">Copy IBAN  %1$s</string>
+    <string name="smart_code">Copy code  %1$s</string>
+
+    <string name="tr_title">Translation</string>
+    <string name="tr_working">Translating…</string>
+    <string name="tr_copy">Copy translation</string>
+    <string name="tr_unavailable">This phone has no built-in translation. You can use a translator app, or install one.</string>
+    <string name="tr_use_app">Use a translator app</string>
+    <string name="tr_install">Install a translator</string>
+    <string name="tr_no_store">No app store was found to install a translator.</string>
+
+    <string name="msg_unknown_shortcut">Unknown shortcut</string>
+    <string name="msg_no_app">No app found for this shortcut</string>
+    <string name="msg_not_allowed">This app does not allow being opened this way</string>
+    <string name="msg_nothing_to_copy">Nothing to copy for this shortcut</string>
+    <string name="msg_add_shortcuts">Add shortcuts in Alef_B_scan settings</string>
+
+    <!-- Capture screen -->
+    <string name="cap_ready">Tap a word, or circle text</string>
+    <string name="cap_reading">Reading text…</string>
+    <string name="cap_reading_images">Tap a word, or circle text · reading images…</string>
+    <string name="cap_no_text">No text found. Tap where text is to look again.</string>
+    <string name="cap_ocr_failed">Image text could not be read: %1$s</string>
+    <string name="cap_looking">Looking for text here…</string>
+    <string name="cap_no_text_spot">No text found at that spot</string>
+    <string name="cap_reading_selection">Reading the selection closely…</string>
+    <string name="act_copy">Copy</string>
+    <string name="act_share">Share</string>
+    <string name="act_sentence">Sentence</string>
+    <string name="act_paragraph">Paragraph</string>
+    <string name="act_all">All</string>
+    <string name="act_smart">Smart</string>
+    <string name="share_text">Share text</string>
+    <string name="msg_copied">Copied</string>
+    <string name="msg_copied_stay">Copied. Select more to copy.</string>
+    <string name="msg_share_unavailable">Sharing is not available</string>
+    <string name="msg_screenshot_failed">Screen capture failed</string>
+    <string name="msg_screenshot_blocked">This screen cannot be captured (code %1$d)</string>
+    <string name="msg_capture_failed">Could not open the capture screen: %1$s</string>
+    <string name="msg_strip_failed">Could not show the trigger strip: %1$s</string>
+
+    <!-- Copy & history page -->
+    <string name="stay_after_copy">Stay to copy more</string>
+    <string name="stay_after_copy_line">After Copy, keep the frozen screen open so you can select and copy more. Each copy is also saved to the history below.</string>
+    <string name="s_history">Copy history</string>
+    <string name="history_on">Save copied text to history</string>
+    <string name="history_keep">Keep items for:</string>
+    <string name="keep_1h">1 hour</string>
+    <string name="keep_24h">24 hours</string>
+    <string name="keep_7d">7 days</string>
+    <string name="keep_forever">Until cleared</string>
+    <string name="history_privacy">History stays only on this phone. It may include codes or account numbers you copied, so keep the time short or turn it off.</string>
+    <string name="history_empty">Nothing copied yet.</string>
+    <string name="history_count">%1$d copied items</string>
+    <string name="history_tip">Tap an item to copy it again; hold it to remove it.</string>
+    <string name="history_delete_q">Remove this item?</string>
+    <string name="history_clear">Clear history</string>
+    <string name="history_clear_q">Remove all copied items from this phone?</string>
+
+    <!-- Recognition, tiles -->
+    <string name="ocr_arabic">Read Arabic as well as English in images</string>
+    <string name="recognition_line">Text shown by apps is read exactly. Text inside images is recognized on this phone; selected image text is re-read closely before it is copied.</string>
+    <string name="tile_toggle_setting">On/off tile: turn the trigger off in one tap (for example before banking apps)</string>
+    <string name="tile_capture_setting">Capture tile: works even when the trigger is off</string>
+    <string name="tiles_hint">After turning a tile on, open Quick Settings, tap the edit (pencil) button and drag the tile into place.</string>
+
+    <!-- Backup -->
+    <string name="backup_line">Save your settings and shortcuts to a file, for example to set up your other phone the same way. Copy history is not included.</string>
+    <string name="backup_export">Export settings</string>
+    <string name="backup_import">Import settings</string>
+    <string name="backup_exported">Settings exported</string>
+    <string name="backup_imported">Settings imported</string>
+    <string name="backup_failed">That did not work. Is it an Alef_B_scan settings file?</string>
+
+    <!-- Updates -->
+    <string name="version_line">Installed: %1$s</string>
+    <string name="updates_line">Tap to check GitHub for a newer version.</string>
+    <string name="check_updates">Check for updates</string>
+    <string name="updates_internet_note">The internet is used only to check for and download updates. Screen text is never sent anywhere.</string>
+    <string name="checking_updates">Checking for updates…</string>
+    <string name="up_to_date">You have the latest version</string>
+    <string name="no_internet">Could not reach GitHub. Check the internet connection.</string>
+    <string name="update_available">New version: %1$s</string>
+    <string name="update_install_q">Download and install it now? Your settings and shortcuts are kept.</string>
+    <string name="update_install">Install</string>
+    <string name="update_allow_installs">Allow Alef_B_scan to install updates, then tap Update again.</string>
+    <string name="downloading_update">Downloading the update…</string>
+    <string name="update_failed">The download failed. Try again later.</string>
+
+    <!-- Test report -->
+    <string name="report_intro">The report records what the app did, how long each step took and any errors. Share it after testing to help fix problems.</string>
+    <string name="report_include_text">Include text in report</string>
+    <string name="report_include_text_line">Off: only the length of screen text is recorded. On: the first part of the selected and recognized text is recorded too. Turn it on only while testing.</string>
+    <string name="report_view">View report</string>
+    <string name="report_share">Share report</string>
+    <string name="report_clear">Clear report</string>
+    <string name="report_clear_q">Delete the report from this phone?</string>
+    <string name="report_cleared">Report cleared</string>
 </resources>

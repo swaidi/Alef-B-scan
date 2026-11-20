@@ -12,6 +12,7 @@ import android.graphics.RectF
 import android.graphics.drawable.GradientDrawable
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.text.TextUtils
 import android.view.Gravity
 import android.view.KeyEvent
@@ -23,6 +24,7 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.concurrent.Executors
 
@@ -31,8 +33,8 @@ interface CaptureHost {
     /** Closes the capture screen, leaving the user where they were. */
     fun close()
 
-    /** Shows a dialog above the capture screen. */
-    fun show(builder: MaterialAlertDialogBuilder)
+    /** Shows a dialog above the capture screen and returns it. */
+    fun show(builder: MaterialAlertDialogBuilder): AlertDialog
 
     /** False once the capture screen has closed. */
     val alive: Boolean
@@ -73,12 +75,15 @@ class CaptureUi(private val ctx: Context, private val host: CaptureHost) {
     private lateinit var statusSpinner: ProgressBar
     private lateinit var actionBar: GlowBar
 
+    private val showDialog: ShowDialog = { b -> host.show(b) }
+
     // ---------- Loading ----------
 
     fun load(bmp: Bitmap, direct: List<Word>) {
         screenshot = bmp
         precise = direct.filterNot { it.coarse }
         coarse = direct.filter { it.coarse }
+        AppLog.i("capture: ${bmp.width}x${bmp.height}, app text ${precise.size} words + ${coarse.size} blocks without letter positions")
         selectionView.bitmap = bmp
         selectionView.setWords(direct)
         selectionView.clearSelection()
@@ -95,34 +100,38 @@ class CaptureUi(private val ctx: Context, private val host: CaptureHost) {
         worker.shutdownNow()
     }
 
-    private fun readyStatus() = "Tap a word, or circle text"
+    private fun readyStatus() = ctx.getString(R.string.cap_ready)
+    private fun busyStatus() = ctx.getString(R.string.cap_reading_images)
 
     private fun recognizeImages(bmp: Bitmap) {
         val gen = ++generation
         ocrRunning = true
-        setStatus(
-            if (precise.isEmpty()) "Reading text…" else "${readyStatus()}  ·  reading images…",
-            busy = true
-        )
+        setStatus(if (precise.isEmpty()) ctx.getString(R.string.cap_reading) else busyStatus(), busy = true)
         // Only exact app text is skipped; blocks without letter positions are recognized
         // so that every word in them can be selected on its own.
         val skip = precise.map { it.box }
+        val started = SystemClock.elapsedRealtime()
         worker.execute {
             val result = runCatching { OcrEngine.recognizeWords(ctx, bmp, skip) }
             main.post {
                 if (destroyed || gen != generation) return@post
                 ocrRunning = false
+                val ms = SystemClock.elapsedRealtime() - started
                 result.fold(
                     onSuccess = { ocr ->
                         val fromImages = ocr.filterNot { overlaps(it.box, precise, 0.3f) }
                         val merged = precise + splitBlocks(fromImages)
+                        AppLog.i("image text: ${ocr.size} words in ${ms} ms; ${merged.size} selectable words in total")
                         selectionView.setWords(merged)
                         setStatus(
-                            if (merged.isEmpty()) "No text found. Tap where text is to look again." else readyStatus(),
+                            if (merged.isEmpty()) ctx.getString(R.string.cap_no_text) else readyStatus(),
                             busy = false
                         )
                     },
-                    onFailure = { setStatus("Image text could not be read: ${it.message}", busy = false) }
+                    onFailure = {
+                        AppLog.e("image text failed after $ms ms", it)
+                        setStatus(ctx.getString(R.string.cap_ocr_failed, it.message ?: ""), busy = false)
+                    }
                 )
             }
         }
@@ -135,6 +144,7 @@ class CaptureUi(private val ctx: Context, private val host: CaptureHost) {
     private fun splitBlocks(ocr: List<Word>): List<Word> {
         val used = HashSet<Word>()
         val out = ArrayList<Word>()
+        var exact = 0
         for (block in coarse) {
             val area = RectF(block.box).apply { inset(-6f, -6f) }
             val inside = ocr.filter { it !in used && area.contains(it.box.centerX(), it.box.centerY()) }
@@ -145,11 +155,13 @@ class CaptureUi(private val ctx: Context, private val host: CaptureHost) {
             used.addAll(inside)
             val tokens = block.text.split(Regex("\\s+")).filter { it.isNotEmpty() }
             if (tokens.size == inside.size) {
+                exact++
                 inside.forEachIndexed { i, w -> out.add(Word(tokens[i], w.box, w.line, block.para, fromImage = false)) }
             } else {
                 inside.forEach { w -> out.add(Word(w.text, w.box, w.line, block.para, fromImage = true)) }
             }
         }
+        if (coarse.isNotEmpty()) AppLog.i("text blocks: ${coarse.size}, split with exact app text: $exact")
         out.addAll(ocr.filterNot { it in used })
         return out
     }
@@ -170,27 +182,28 @@ class CaptureUi(private val ctx: Context, private val host: CaptureHost) {
         val bmp = screenshot ?: return
         if (selectionView.height <= 0) return
         val sy = bmp.height / selectionView.height.toFloat()
-        val half = (dp(36) * sy).toInt()
+        val half = (ctx.dp(36) * sy).toInt()
         val region = Rect(0, (p.y - half).toInt(), bmp.width, (p.y + half).toInt())
         val gen = generation
-        setStatus("Looking for text here…", busy = true)
+        setStatus(ctx.getString(R.string.cap_looking), busy = true)
+        val started = SystemClock.elapsedRealtime()
         worker.execute {
             val found = runCatching { OcrEngine.recognizeRegion(ctx, bmp, region) }.getOrDefault(emptyList())
             main.post {
                 if (destroyed || gen != generation) return@post
                 val fresh = found.filterNot { overlaps(it.box, selectionView.allWords(), 0.5f) }
                 selectionView.addWords(fresh)
-                setStatus(if (ocrRunning) "${readyStatus()}  ·  reading images…" else readyStatus(), busy = ocrRunning)
-                if (!selectionView.selectWordAt(p)) {
-                    Toast.makeText(ctx, "No text found at that spot", Toast.LENGTH_SHORT).show()
-                }
+                setStatus(if (ocrRunning) busyStatus() else readyStatus(), busy = ocrRunning)
+                val hit = selectionView.selectWordAt(p)
+                AppLog.i("re-scan at y=${p.y.toInt()}: ${found.size} words, ${fresh.size} new, word under finger: $hit (${SystemClock.elapsedRealtime() - started} ms)")
+                if (!hit) Toast.makeText(ctx, R.string.cap_no_text_spot, Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     // ---------- Layout ----------
 
-    private fun dp(v: Int) = (v * ctx.resources.displayMetrics.density).toInt()
+    private fun dp(v: Int) = ctx.dp(v)
 
     private fun pill(alpha: Int = 225) = GradientDrawable().apply {
         cornerRadius = dp(24).toFloat()
@@ -228,7 +241,7 @@ class CaptureUi(private val ctx: Context, private val host: CaptureHost) {
             textSize = 13f
         }
         top.addView(statusText, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-        top.addView(barButton("Close") { host.close() })
+        top.addView(barButton(ctx.getString(R.string.close)) { host.close() })
         root.addView(top, FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP
         ).apply { setMargins(dp(16), dp(36), dp(16), 0) })
@@ -238,14 +251,16 @@ class CaptureUi(private val ctx: Context, private val host: CaptureHost) {
             gravity = Gravity.CENTER
             setPadding(glowSize + dp(6), glowSize + dp(2), glowSize + dp(6), glowSize + dp(2))
             visibility = View.GONE
+            // The pinned shortcut stays the last button on the right, in English and Arabic.
+            layoutDirection = View.LAYOUT_DIRECTION_LTR
         }
-        bar.addView(actionButton("Copy", R.drawable.ic_action_copy) { copy() })
-        bar.addView(actionButton("Share", R.drawable.ic_action_share) { share() })
-        expandButton = actionButton("Sentence", R.drawable.ic_action_sentence) { expandSelection() }
+        bar.addView(actionButton(ctx.getString(R.string.act_copy), R.drawable.ic_action_copy) { copy() })
+        bar.addView(actionButton(ctx.getString(R.string.act_share), R.drawable.ic_action_share) { share() })
+        expandButton = actionButton(ctx.getString(R.string.act_sentence), R.drawable.ic_action_sentence) { expandSelection() }
         bar.addView(expandButton)
-        bar.addView(actionButton("All", R.drawable.ic_action_select_all) { selectionView.selectAll() })
-        // Tap runs the default (starred) shortcut; long-press chooses another one.
-        shortcutButton = actionButton("Smart", R.drawable.ic_action_shortcut) { runDefaultShortcut() }
+        bar.addView(actionButton(ctx.getString(R.string.act_all), R.drawable.ic_action_select_all) { selectionView.selectAll() })
+        // Tap runs the pinned shortcut; long-press opens the full list.
+        shortcutButton = actionButton(ctx.getString(R.string.act_smart), R.drawable.ic_action_shortcut) { runPinnedShortcut() }
         shortcutButton.setOnLongClickListener {
             pickShortcut()
             true
@@ -309,47 +324,61 @@ class CaptureUi(private val ctx: Context, private val host: CaptureHost) {
         }
     }
 
-    // ---------- Shortcut button ----------
+    // ---------- Pinned shortcut button ----------
 
     private lateinit var shortcutButton: Button
 
-    /** Shows the default shortcut's name on the button, or hides it if there are none. */
+    /** Shows the pinned shortcut's name on the button, or hides it if there are none. */
     private fun refreshShortcutButton() {
-        val s = ShortcutStore.defaultShortcut(ctx)
+        val s = ShortcutStore.pinned(ctx)
         if (s == null) {
             shortcutButton.visibility = View.GONE
             return
         }
         shortcutButton.visibility = View.VISIBLE
-        val label = if (s.type == Shortcut.TYPE_SMART) "Smart" else s.name
+        val label = if (s.type == Shortcut.TYPE_SMART) ctx.getString(R.string.act_smart) else s.displayName(ctx)
         setAction(shortcutButton, label, R.drawable.ic_action_shortcut)
         shortcutButton.tooltipText = null // long-press opens the shortcut list instead
     }
 
     private fun runShortcut(s: Shortcut) = withSelectedText { text ->
         if (text.isBlank()) return@withSelectedText
-        ShortcutRunner.run(ctx, host, s, text, done = { host.close() }, other = { pickShortcut() })
+        ShortcutRunner.run(
+            ctx, host, s, text,
+            copied = { result -> afterCopy(result) },
+            done = { host.close() },
+            other = { pickShortcut() }
+        )
     }
 
-    private fun runDefaultShortcut() {
-        val s = ShortcutStore.defaultShortcut(ctx) ?: return pickShortcut()
+    private fun runPinnedShortcut() {
+        val s = ShortcutStore.pinned(ctx) ?: return pickShortcut()
         runShortcut(s)
     }
 
+    /** The full shortcut list: tap runs one; hold one for Pin, Edit or Remove. */
     private fun pickShortcut() {
         val list = ShortcutStore.load(ctx)
         if (list.isEmpty()) {
-            Toast.makeText(ctx, "Add shortcuts in Alef_B_scan settings", Toast.LENGTH_LONG).show()
+            Toast.makeText(ctx, R.string.msg_add_shortcuts, Toast.LENGTH_LONG).show()
             return
         }
-        val def = ShortcutStore.defaultIndex(ctx, list.size)
-        val names = list.mapIndexed { i, s -> if (i == def) "★  ${s.name}" else s.name }.toTypedArray()
-        host.show(
+        val pin = ShortcutStore.pinnedIndex(ctx, list.size)
+        val names = list.mapIndexed { i, s -> if (i == pin) "★  ${s.displayName(ctx)}" else s.displayName(ctx) }.toTypedArray()
+        val dialog = host.show(
             MaterialAlertDialogBuilder(ctx)
-                .setTitle("Run shortcut")
+                .setTitle(R.string.run_shortcut_title)
                 .setItems(names) { _, i -> runShortcut(list[i]) }
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(R.string.cancel, null)
         )
+        dialog.listView?.setOnItemLongClickListener { _, _, position, _ ->
+            dialog.dismiss()
+            ShortcutEditor.showOptions(ctx, showDialog, position, withMoveUp = false) {
+                refreshShortcutButton()
+                if (actionBar.visibility == View.VISIBLE) showActionBar()
+            }
+            true
+        }
     }
 
     // ---------- Step-by-step selection: word → sentence → paragraph ----------
@@ -359,14 +388,14 @@ class CaptureUi(private val ctx: Context, private val host: CaptureHost) {
 
     private fun resetExpand() {
         expandLevel = 0
-        setAction(expandButton, "Sentence", R.drawable.ic_action_sentence)
+        setAction(expandButton, ctx.getString(R.string.act_sentence), R.drawable.ic_action_sentence)
         expandButton.visibility = if (selectionView.isAllSelected()) View.GONE else View.VISIBLE
     }
 
     private fun expandSelection() {
         if (expandLevel == 0 && selectionView.expandToSentence()) {
             expandLevel = 1
-            setAction(expandButton, "Paragraph", R.drawable.ic_action_paragraph)
+            setAction(expandButton, ctx.getString(R.string.act_paragraph), R.drawable.ic_action_paragraph)
         } else {
             // Already a full sentence (or second tap): go to the whole paragraph.
             selectionView.expandToParagraph()
@@ -444,9 +473,11 @@ class CaptureUi(private val ctx: Context, private val host: CaptureHost) {
         val all = selectionView.allWords()
 
         resolving = true
-        setStatus("Reading the selection closely…", busy = true)
+        setStatus(ctx.getString(R.string.cap_reading_selection), busy = true)
         val gen = generation
+        val started = SystemClock.elapsedRealtime()
         worker.execute {
+            var improved = 0
             val parts = lines.values.map { ws ->
                 val original = ws.joinToString(" ") { it.text }
                 if (ws.none { it.fromImage }) return@map ws.first().para to original
@@ -455,12 +486,15 @@ class CaptureUi(private val ctx: Context, private val host: CaptureHost) {
                 // Keep the careful reading unless it is clearly worse than the first one.
                 val better = reread != null && reread.second >= 35 &&
                     reread.first.length >= (original.length * 0.6f)
+                if (better && reread!!.first != original) improved++
+                AppLog.i("re-read line: first ${AppLog.text(original)} → ${if (reread != null) AppLog.text(reread.first) + " (${reread.second}%)" else "none"}, kept ${if (better) "re-read" else "first"}")
                 ws.first().para to (if (better) reread!!.first else original)
             }
             main.post {
                 resolving = false
                 if (destroyed || gen != generation) return@post
-                setStatus(if (ocrRunning) "${readyStatus()}  ·  reading images…" else readyStatus(), busy = ocrRunning)
+                AppLog.i("selection re-read: ${lines.size} lines, $improved changed, ${SystemClock.elapsedRealtime() - started} ms")
+                setStatus(if (ocrRunning) busyStatus() else readyStatus(), busy = ocrRunning)
                 val sb = StringBuilder()
                 var lastPara = Int.MIN_VALUE
                 for ((para, text) in parts) {
@@ -499,12 +533,27 @@ class CaptureUi(private val ctx: Context, private val host: CaptureHost) {
 
     // ---------- Actions ----------
 
+    /**
+     * After text was copied: save it to the history, then either close (back to the app) or,
+     * with "Stay to copy more" on, keep the frozen screen open for the next selection.
+     */
+    private fun afterCopy(text: String) {
+        History.add(ctx, text)
+        AppLog.i("copied ${AppLog.text(text)}")
+        if (Prefs.stayAfterCopy(ctx)) {
+            Toast.makeText(ctx, R.string.msg_copied_stay, Toast.LENGTH_SHORT).show()
+            selectionView.clearSelection()
+        } else {
+            Toast.makeText(ctx, R.string.msg_copied, Toast.LENGTH_SHORT).show()
+            host.close()
+        }
+    }
+
     private fun copy() = withSelectedText { text ->
         if (text.isBlank()) return@withSelectedText
         val clipboard = ctx.getSystemService(ClipboardManager::class.java)
         clipboard.setPrimaryClip(ClipData.newPlainText("Screen text", text))
-        Toast.makeText(ctx, "Copied", Toast.LENGTH_SHORT).show()
-        host.close()
+        afterCopy(text)
     }
 
     private fun share() = withSelectedText { text ->
@@ -514,10 +563,14 @@ class CaptureUi(private val ctx: Context, private val host: CaptureHost) {
             putExtra(Intent.EXTRA_TEXT, text)
         }
         try {
-            ctx.startActivity(Intent.createChooser(send, "Share text").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            ctx.startActivity(
+                Intent.createChooser(send, ctx.getString(R.string.share_text)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
+            AppLog.i("shared ${AppLog.text(text)}")
             host.close()
-        } catch (_: Exception) {
-            Toast.makeText(ctx, "Sharing is not available", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            AppLog.e("share", e)
+            Toast.makeText(ctx, R.string.msg_share_unavailable, Toast.LENGTH_SHORT).show()
         }
     }
 

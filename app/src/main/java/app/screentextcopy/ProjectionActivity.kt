@@ -43,7 +43,7 @@ class ProjectionActivity : Activity() {
                     Intent(this, CaptureActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
                 )
             } else {
-                Toast.makeText(this, "Screen capture failed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, R.string.msg_screenshot_failed, Toast.LENGTH_SHORT).show()
             }
             finish()
             overridePendingTransition(0, 0)

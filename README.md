@@ -6,8 +6,9 @@ Long-press a thin strip at the bottom edge of the screen, then tap or circle any
 
 - Text shown by apps (chats, web pages, documents) is read directly, so it is exact in Arabic and English.
 - Text inside images is recognized on the phone with Tesseract (high-accuracy Arabic and English); selected image text is re-read closely before copying.
-- No internet permission and no Google services.
-- Updates: GitHub Releases, installed through Obtainium.
+- No Google services. The internet is used only by the Update button (check and download new versions); screen text is never sent.
+- Updates: the in-app Update button (dot when a new version exists), or Obtainium.
+- English and Arabic interface; copy history kept only on the phone; test report for troubleshooting.
 
 ## Selecting text
 
@@ -18,17 +19,19 @@ Long-press a thin strip at the bottom edge of the screen, then tap or circle any
 
 ## Shortcuts (⚡ button)
 
-Tap ⚡ on the selection bar to run the starred shortcut; long-press it to pick another.
-Manage shortcuts in the app's settings (add, make default, move up, delete).
+Tap ⚡ (always the last button on the right) to run the pinned shortcut. Hold ⚡ for the full list;
+hold a shortcut in that list to Pin, Edit or Remove it. Shortcuts are also managed in the app's settings.
 
-- **Smart action** (default): finds phone numbers (Call / WhatsApp), emails, links and addresses
-  in the selection using Android's on-device text classifier.
+- **Smart action** (pinned at first): phone numbers (Call / WhatsApp), emails, links, addresses, dates (the phone's own
+  calendar action), IBANs (checksum-verified) and reference codes such as HMG-SW-070-26.
+- **Translate**: Arabic ↔ English with the phone's built-in on-device translation when available; otherwise your
+  translator app, or a prompt to install one.
 - **App text action**: sends the text to another app's text action (Translate, AI assistant, dictionary).
 - **Share directly** to a chosen app.
 - **Links**: Search Google, Search IMDb, or a custom link with `{text}`.
 - **Clean up & copy**: numbers only, emails & phone numbers only, join lines, or copy with a template.
 
-The app itself still has no internet permission; link and app shortcuts hand the text to the chosen app.
+Link and app shortcuts hand the text to the chosen app.
 
 ## Triggers
 

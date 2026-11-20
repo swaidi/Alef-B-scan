@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -58,9 +59,7 @@ class CaptureActivity : AppCompatActivity(), CaptureHost {
         finish()
     }
 
-    override fun show(builder: MaterialAlertDialogBuilder) {
-        builder.show()
-    }
+    override fun show(builder: MaterialAlertDialogBuilder): AlertDialog = builder.show()
 
     override val alive: Boolean
         get() = !isFinishing && !isDestroyed
