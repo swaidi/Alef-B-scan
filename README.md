@@ -63,3 +63,12 @@ Builds started on other branches produce a test APK only (no release).
 Required repository secrets: `KEYSTORE_BASE64`, `SIGNING_STORE_PASSWORD`,
 `SIGNING_KEY_ALIAS`, `SIGNING_KEY_PASSWORD`. Keep the keystore safe: losing it means
 future updates cannot be installed over the existing app.
+
+## License
+
+Copyright © 2026 Swaidi (trading as A.T.Grep).
+
+Free for **individuals** for personal, non-commercial use. Use by any **organization** (company,
+small business, government body, charity or school), commercial use, distributing changed versions
+and reusing the code need written approval and may involve fees. See [LICENSE.md](LICENSE.md).
+To ask, open an [issue](https://github.com/swaidi/Alef-B-scan/issues) or email dev.oasis006@passmail.net.
